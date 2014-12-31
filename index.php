@@ -23,7 +23,7 @@
 
 	date_default_timezone_set('UTC');
 
-	// http://it.wikinews.org/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc
+	// https://it.wikinews.org/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc
 	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&format=php');
 	curl_setopt ($conn, CURLOPT_USERAGENT, "BimBot/1.0");
 	curl_setopt($conn, CURLOPT_RETURNTRANSFER, True);
@@ -37,7 +37,7 @@
 	echo '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">' . "\n";
 	echo " <channel>\n";
 	echo "  <title>Wikinotizie</title>\n";
-	echo "  <link>http://" . WIKI_HOST . "</link>\n";
+	echo "  <link>https://" . WIKI_HOST . "</link>\n";
 	echo "  <description>Tutte le notizie in tempo reale!</description>\n";
 	echo "  <language>it</language>\n";
 	echo "  <webMaster>pietrodn@toolserver.org (Pietrodn)</webMaster>\n";
