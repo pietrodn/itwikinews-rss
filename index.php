@@ -23,8 +23,8 @@
 
 	date_default_timezone_set('UTC');
 
-	// http://it.wikinews.org/w/api.php?action=query&prop=revisions&rvprop=timestamp|content&rvparse&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc
-	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=revisions&rvprop=timestamp|content&rvparse&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&format=php');
+	// http://it.wikinews.org/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc
+	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&format=php');
 	curl_setopt ($conn, CURLOPT_USERAGENT, "BimBot/1.0");
 	curl_setopt($conn, CURLOPT_RETURNTRANSFER, True);
 	$ser = curl_exec($conn);
@@ -43,19 +43,19 @@
 	echo "  <webMaster>pietrodn@toolserver.org (Pietrodn)</webMaster>\n";
 	echo "  <atom:link href=\"https://tools.wmflabs.org/itwikinews-rss/\" rel=\"self\" type=\"application/rss+xml\" />\n";
 	echo "  <copyright>CC-BY-SA-3.0</copyright>\n";
-	echo "  <generator>https://github.com/pietrodn/itwikinews-rss/blob/master/index.php</generator>\n";
+	echo "  <generator>https://github.com/pietrodn/itwikinews-rss/</generator>\n";
 	
 	foreach($pages as $page)
 	{
 		$datetime = new DateTime($page['revisions'][0]['timestamp']);
 		$datestring = $datetime->format(DateTime::RSS);
-		$commentsUrl = 'http://' . WIKI_HOST . '/w/index.php?title=' . rawurlencode('Discussione:' . $page['title'] . '/Commenti');
-		$url = 'http://' . WIKI_HOST . '/w/index.php?title=' . rawurlencode($page['title']);
+		$commentsUrl = 'https://' . WIKI_HOST . '/w/index.php?title=' . rawurlencode('Discussione:' . $page['title'] . '/Commenti');
+		$url = 'https://' . WIKI_HOST . '/w/index.php?title=' . rawurlencode($page['title']);
 		
 		echo "  <item>\n";
 		echo '   <title>' . $page['title'] . "</title>\n";
 		echo "   <link>$url</link>\n";
-		echo '   <description>' . htmlspecialchars($page['revisions'][0]['*']) . "</description>\n";
+		echo '   <description>' . htmlspecialchars($page['extract']) . "</description>\n";
 		echo '   <guid isPermaLink="true">' . $url . "</guid>\n";
 		echo '   <pubDate>' . $datestring . "</pubDate>\n";
 		echo '   <comments>' . $commentsUrl . "</comments>\n";
