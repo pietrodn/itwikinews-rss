@@ -23,8 +23,8 @@
 
 	date_default_timezone_set('UTC');
 
-	// https://it.wikinews.org/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc
-	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|revisions&exintro=0&exlimit=max&rvprop=timestamp&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&format=php');
+	// https://it.wikinews.org/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc&continue=
+	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&continue=&format=php');
 	curl_setopt ($conn, CURLOPT_USERAGENT, "BimBot/1.0");
 	curl_setopt($conn, CURLOPT_RETURNTRANSFER, True);
 	$ser = curl_exec($conn);
@@ -34,7 +34,7 @@
 	$pages = $unser['query']['pages'];
 	
 	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	echo '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">' . "\n";
+	echo '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">' . "\n";
 	echo " <channel>\n";
 	echo "  <title>Wikinotizie</title>\n";
 	echo "  <link>https://" . WIKI_HOST . "</link>\n";
@@ -47,7 +47,7 @@
 	
 	foreach($pages as $page)
 	{
-		$datetime = new DateTime($page['revisions'][0]['timestamp']);
+		$datetime = new DateTime($page['touched']);
 		$datestring = $datetime->format(DateTime::RSS);
 		$commentsUrl = 'https://' . WIKI_HOST . '/w/index.php?title=' . rawurlencode('Discussione:' . $page['title'] . '/Commenti');
 		$url = 'https://' . WIKI_HOST . '/w/index.php?title=' . rawurlencode($page['title']);
@@ -59,6 +59,14 @@
 		echo '   <guid isPermaLink="true">' . $url . "</guid>\n";
 		echo '   <pubDate>' . $datestring . "</pubDate>\n";
 		echo '   <comments>' . $commentsUrl . "</comments>\n";
+		
+		if(isset($page['thumbnail'])) {
+			$img_url = $page['thumbnail']['source'];
+			$img_width = $page['thumbnail']['width'];
+			$img_height = $page['thumbnail']['height'];
+			echo "   <media:content url=\"$img_url\" width=\"$img_width\" height=\"$img_height\" />\n";
+		}
+		
 		echo "  </item>\n";
 	}
 	
