@@ -24,13 +24,13 @@
 	date_default_timezone_set('UTC');
 
 	// https://it.wikinews.org/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc&continue=
-	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&continue=&format=php');
+	$conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&continue=&format=json');
 	curl_setopt ($conn, CURLOPT_USERAGENT, "BimBot/1.0");
 	curl_setopt($conn, CURLOPT_RETURNTRANSFER, True);
 	$ser = curl_exec($conn);
 	curl_close($conn);
 	
-	$unser = unserialize($ser);
+	$unser = json_decode($ser, True);
 	$pages = $unser['query']['pages'];
 	
 	echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
