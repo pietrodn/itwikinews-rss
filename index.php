@@ -58,7 +58,7 @@
     foreach($pages as $page_id => $page)
     {
         // Check page freshness
-        if($page_id < $max_id - 100) {
+        if($page_id < $max_id - PAGE_ID_FRESHNESS) {
             continue;
         }
 
