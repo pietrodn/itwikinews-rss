@@ -6,8 +6,8 @@
 
 ## Hosting
 
-The tool is currently hosted on [Wikimedia Tool Labs](https://tools.wmflabs.org/) at the following address:
-https://tools.wmflabs.org/itwikinews-rss/
+The tool is currently hosted on [Wikimedia Tool Labs](https://toolforge.org/) at the following address:
+https://itwikinews-rss.toolforge.org/
 
 It was previously hosted on [Wikimedia Toolserver](https://meta.wikimedia.org/wiki/Toolserver).
 

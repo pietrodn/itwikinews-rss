@@ -48,8 +48,8 @@
     echo "  <link>https://" . WIKI_HOST . "</link>\n";
     echo "  <description>Tutte le notizie in tempo reale!</description>\n";
     echo "  <language>it</language>\n";
-    echo "  <webMaster>itwikinews-rss.help@tools.wmflabs.org (Pietrodn)</webMaster>\n";
-    echo "  <atom:link href=\"https://tools.wmflabs.org/itwikinews-rss/\" rel=\"self\" type=\"application/rss+xml\" />\n";
+    echo "  <webMaster>itwikinews-rss.help@toolforge.org (Pietrodn)</webMaster>\n";
+    echo "  <atom:link href=\"https://itwikinews-rss.toolforge.org/\" rel=\"self\" type=\"application/rss+xml\" />\n";
     echo "  <copyright>CC-BY-SA-3.0</copyright>\n";
     echo "  <generator>https://github.com/pietrodn/itwikinews-rss/</generator>\n";
 
