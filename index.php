@@ -19,6 +19,7 @@
     // Constants
     define('WIKI_HOST', 'it.wikinews.org');
     define('NEWS_CATEGORY', 'Categoria:Pubblicati');
+    define('ARCHIVED_CATEGORY', 'Categoria:Articoli archiviati');
     define('NEWS_LIMIT', 10);
 
     /* Heuristic to ensure freshness of news articles.
@@ -32,14 +33,63 @@
     // Order: time of insertion into the category, descending.
     // An heuristic is later provided to discard old articles that are recently added to the category.
     // https://it.wikinews.org/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=Categoria:Pubblicati&gcmlimit=10&gcmsort=timestamp&gcmdir=desc&continue=
-    $conn = curl_init('https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|pageimages|info&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT . '&gcmsort=timestamp&gcmdir=desc&continue=&format=json');
-    curl_setopt ($conn, CURLOPT_USERAGENT, "BimBot/1.0");
-    curl_setopt($conn, CURLOPT_RETURNTRANSFER, True);
-    $ser = curl_exec($conn);
-    curl_close($conn);
+    $published_articles_query = 'https://' . WIKI_HOST . '/w/api.php?action=query&prop=extracts|pageimages|info' .
+        '&pilimit=max&pithumbsize=200&exintro=0&exlimit=max&generator=categorymembers' .
+        '&gcmtitle=' . NEWS_CATEGORY . '&gcmlimit=' . NEWS_LIMIT*2 .
+        '&gcmsort=timestamp&gcmdir=desc&continue=&format=json';
 
-    $unser = json_decode($ser, True);
-    $pages = $unser['query']['pages'];
+    $all_published_articles = get_api_contents($published_articles_query);
+    $pages = $all_published_articles['query']['pages'];
+
+    $page_ids = array_map(function($page) {return $page["pageid"];}, $pages);
+    $page_ids_concat = implode("|", $page_ids);
+
+    // Get all the categories of the retrieved pages
+    $page_categories_query = 'https://' . WIKI_HOST . '/w/api.php?action=query&prop=categories' .
+        '&pageids=' . $page_ids_concat . '&cllimit=max&continue=&format=json';
+    $categories_result = get_api_contents($page_categories_query);
+    /*
+    Format of categories_result:
+
+        "query": {
+        "pages": {
+            "7759": {
+                "pageid": 7759,
+                "ns": 0,
+                "title": "\"Anche la Luna \u00e8 un pianeta\": gli astronomi contestano il nuovo sistema solare",
+                "categories": [
+                    {
+                        "ns": 14,
+                        "title": "Categoria:20 agosto 2006"
+                    },
+                    {
+                        "ns": 14,
+                        "title": "Categoria:Articoli archiviati"
+                    },
+                    ...
+    */
+
+    // A dictionary pageid => [category1, category2, ...]
+    $categories_by_pageid = array_map(
+        function($page) {
+            return array_map(
+                function($category_item) {
+                    return $category_item["title"];
+                },
+                $page["categories"] ?? []
+            );
+        },
+        $categories_result["query"]["pages"]
+    );
+
+    // Filter out archived articles
+    $good_pages = [];
+    foreach($pages as $page_id => $page) {
+        if(!in_array(ARCHIVED_CATEGORY, $categories_by_pageid[$page_id] ?? [])) {
+            $good_pages[$page_id] = $page;
+        }
+    }
+    $good_pages = array_slice($good_pages, 0, NEWS_LIMIT);
 
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     echo '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">' . "\n";
@@ -53,9 +103,9 @@
     echo "  <copyright>CC-BY-SA-3.0</copyright>\n";
     echo "  <generator>https://github.com/pietrodn/itwikinews-rss/</generator>\n";
 
-    $max_id = max(array_keys($pages));
+    $max_id = max(array_keys($good_pages));
 
-    foreach($pages as $page_id => $page)
+    foreach($good_pages as $page_id => $page)
     {
         // Check page freshness
         if($page_id < $max_id - PAGE_ID_FRESHNESS) {
@@ -87,4 +137,18 @@
 
     echo " </channel>\n";
     echo "</rss>\n";
+
+
+    function get_api_contents($url) {
+        // Query an API endpoint and return the response
+
+        $conn = curl_init($url);
+        curl_setopt ($conn, CURLOPT_USERAGENT, "BimBot/1.0");
+        curl_setopt($conn, CURLOPT_RETURNTRANSFER, True);
+        $ser = curl_exec($conn);
+        curl_close($conn);
+        $unser = json_decode($ser, True);
+
+        return $unser;
+    }
 ?>
